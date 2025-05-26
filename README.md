@@ -17,6 +17,27 @@ LinkSniff is a containerized Flask frontend webui that queues and manages downlo
 ## Warning!
 - **!NOT MEANT FOR PUBLIC FACING WEBSITES!**: If you openly expose this to the internet from your network that is 100% not my problem. Don't do it. It is not made with that in mind.
 
+## Table of Contents
+- [Quick Start](#quick-start)
+- [How It Works - The Modular Magic](#how-it-works---the-modular-magic)
+- [Included Example Scripts](#included-example-scripts)
+- [Adding New Platforms](#adding-new-platforms)
+  - [Requirements for Your Script](#requirements-for-your-script)
+  - [Basic Template](#basic-template)
+  - [What Tools Can You Use?](#what-tools-can-you-use)
+  - [Hot-Swappable Scripts](#hot-swappable-scripts)
+- [Configuration](#configuration)
+  - [Directory Structure](#directory-structure)
+  - [Concurrency Settings](#concurrency-settings)
+- [Usage](#usage)
+  - [Adding URLs](#adding-urls)
+  - [Queue Management](#queue-management)
+  - [Control Buttons](#control-buttons)
+  - [Settings Menu (☰)](#settings-menu-☰)
+- [Docker Configuration](#docker-configuration)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
 ## Quick Start
 
 ### Prerequisites
