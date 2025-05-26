@@ -15,7 +15,7 @@ The naming convention is: `linksniff-{domain}.py` where `{domain}` is the second
 
 ## Available Scripts
 
-### 🎥 YouTube (`linksniff-youtube.py`)
+### YouTube (`linksniff-youtube.py`)
 Downloads YouTube videos with full metadata and quality options.
 
 **Features:**
@@ -40,7 +40,7 @@ python linksniff-youtube.py "https://www.youtube.com/watch?v=VIDEO_ID"
 
 ---
 
-### 🎵 TikTok (`linksniff-tiktok.py`)
+### TikTok (`linksniff-tiktok.py`)
 Bulk downloads from TikTok profiles using JavaScript injection.
 
 **Features:**
@@ -70,7 +70,7 @@ python linksniff-tiktok.py "https://www.tiktok.com/@username"
 
 ---
 
-### 📸 Instagram (`linksniff-instagram.py`) 
+### Instagram (`linksniff-instagram.py`) 
 Downloads Instagram profiles via sssinstagram.com proxy service.
 
 **Features:**
@@ -105,7 +105,7 @@ python linksniff-instagram.py "https://www.instagram.com/username" -uh  # visibl
 
 ---
 
-### 🎬 MissAV (`linksniff-missav.py`)
+### MissAV (`linksniff-missav.py`)
 Downloads streaming videos from MissAV pages by extracting m3u8 links.
 
 **Features:**
@@ -127,10 +127,11 @@ python linksniff-missav.py "https://missav.ws/video_page_url"
 
 ---
 
-### 🔞 LeakedZone (`linksniff-leakedzone.py`) ⚠️
+### LeakedZone (`linksniff-leakedzone.py`) 
 **Complex unified scraper for LeakedZone content with special requirements.**
 
-**⚠️ IMPORTANT: This script currently requires running inside the Docker container due to audio codec dependencies and browser compatibility issues.**
+** IMPORTANT: This script currently requires running inside the Docker container due to audio codec dependencies and browser compatibility issues.**
+And don't ask me why. If you mute the volume videos don't download. Whatever.
 
 **Features:**
 - Downloads photos and videos from LeakedZone profiles
@@ -208,10 +209,10 @@ def main():
     try:
         # Your downloading logic here
         # Save files to current working directory
-        print(f"✅ Successfully downloaded from {url}")
+        print(f"Successfully downloaded from {url}")
         
     except Exception as e:
-        print(f"❌ Download failed: {e}")
+        print(f"Download failed: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
