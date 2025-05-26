@@ -1,0 +1,45 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkSniff Web UI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <button id="menu-toggle" aria-label="Open menu">☰</button>
+    <aside id="sidebar">
+        <div class="menu-header">
+            <h2>Settings</h2>
+            <button class="close-menu-btn">✕</button>
+        </div>
+        <div class="menu-item">
+            <label><input type="checkbox" id="theme-toggle" /> Dark Mode</label>
+        </div>
+        <div class="menu-item">
+            <label for="concurrency">Max Sessions:</label>
+            <input type="number" id="concurrency" min="1" max="10" value="3" />
+        </div>
+        <div class="menu-item">
+            <button id="update-ytdlp-button" class="btn secondary" style="width: 100%;">Update yt-dlp</button>
+        </div>
+    </aside>
+
+    <main>
+        <h1>LinkSniff Web UI</h1>
+        <div class="input-section">
+            <textarea id="url-input" placeholder="Paste URL(s) here, one per line..."></textarea>
+            <button id="add-button" class="btn primary">Add to Queue</button>
+        </div>
+        <div class="controls">
+            <button id="refresh-button" class="btn secondary">Refresh Status</button>
+            <button id="clear-completed-button" class="btn warning">Clear Completed</button>
+            <button id="clear-all-button" class="btn danger">Clear All</button>
+        </div>
+        <ul id="queue-list"></ul>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

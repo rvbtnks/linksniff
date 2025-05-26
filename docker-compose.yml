@@ -1,0 +1,15 @@
+# docker-compose.yml
+version: '3'
+services:
+  linksniff:
+    container_name: linksniff
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9559:9559"
+    volumes:
+      - ./config:/app/data
+      - ./scripts:/app/scripts
+      - ./media:/media
+    restart: unless-stopped
