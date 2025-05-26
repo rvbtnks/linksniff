@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir \
       yt-dlp \
       playwright==1.51.0 \
       requests \
+      aiohttp \
       gunicorn
 
 COPY app.py .
