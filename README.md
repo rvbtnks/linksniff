@@ -250,7 +250,7 @@ Found a bug? Want to add support for another platform?
 4. Submit a pull request
 
 **Fair warning**: I'm not the most consistent maintainer. I tend to build things, then move on to the next shiny project. I also work 60 hours a week not doing this. But that's what makes community contributions even more valuable - you're not dependent on me to keep things moving.
-
+With that said though, I am up for requests. just don't give me something that you need this instant. Unless you are willing to pay this instant money so I can quit my job.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
