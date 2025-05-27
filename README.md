@@ -49,7 +49,7 @@ LinkSniff is a containerized Flask frontend webui that queues and manages downlo
 
 1. **Clone this repository**:
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/rvbtnks/linksniff
    cd linksniff
    ```
 
