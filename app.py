@@ -1,11 +1,12 @@
 # app.py
-# Version: 0.3 - Fixed database threading and WAL mode
+# Version: 0.4 - Fixed excessive database writes and WAL bloat
 
 import os
 import sqlite3
 import subprocess
 import threading
 import json
+import time
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -30,14 +31,16 @@ def get_db_connection():
     if not hasattr(thread_local, 'connection'):
         thread_local.connection = sqlite3.connect(
             DB_PATH, 
-            timeout=30.0,  # 30 second timeout
+            timeout=30.0,
             check_same_thread=False
         )
-        # Enable WAL mode for better concurrency
+        # Enable WAL mode with better checkpoint settings
         thread_local.connection.execute('PRAGMA journal_mode=WAL')
         thread_local.connection.execute('PRAGMA synchronous=NORMAL')
         thread_local.connection.execute('PRAGMA cache_size=1000')
         thread_local.connection.execute('PRAGMA temp_store=memory')
+        # More aggressive WAL checkpointing
+        thread_local.connection.execute('PRAGMA wal_autocheckpoint=1000')
     return thread_local.connection
 
 def close_db_connection():
@@ -46,10 +49,21 @@ def close_db_connection():
         thread_local.connection.close()
         delattr(thread_local, 'connection')
 
+def checkpoint_database():
+    """Force a WAL checkpoint"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+        conn.close()
+        print("Database checkpoint completed")
+    except Exception as e:
+        print(f"Error during checkpoint: {e}")
+
 # initialize SQLite schema with WAL mode
 conn = sqlite3.connect(DB_PATH)
 conn.execute('PRAGMA journal_mode=WAL')
 conn.execute('PRAGMA synchronous=NORMAL')
+conn.execute('PRAGMA wal_autocheckpoint=1000')
 c = conn.cursor()
 c.execute("""
 CREATE TABLE IF NOT EXISTS tasks (
@@ -66,6 +80,9 @@ CREATE TABLE IF NOT EXISTS tasks (
 conn.commit()
 conn.close()
 
+# Force initial checkpoint
+checkpoint_database()
+
 # load or create settings
 if os.path.exists(SETTINGS_PATH):
     with open(SETTINGS_PATH) as f:
@@ -76,7 +93,7 @@ else:
         json.dump(settings, f)
 
 lock = threading.Lock()
-active_count = 0  # retained for compatibility, not used in process_queue
+active_count = 0
 
 def save_settings():
     with open(SETTINGS_PATH, 'w') as f:
@@ -101,8 +118,7 @@ def execute_db_query(query, params=(), fetch=False):
         except sqlite3.OperationalError as e:
             if "database is locked" in str(e) and attempt < max_retries - 1:
                 print(f"Database locked, retrying... (attempt {attempt + 1})")
-                import time
-                time.sleep(0.1 * (attempt + 1))  # Progressive backoff
+                time.sleep(0.1 * (attempt + 1))
                 continue
             else:
                 print(f"Database error: {e}")
@@ -175,14 +191,32 @@ def run_task(tid, script, url):
             text=True
         )
 
-        log = ''
+        log_lines = []
+        line_count = 0
+        last_update = time.time()
+        
+        # FIXED: Batch log updates instead of updating every line
         for line in proc.stdout:
-            log += line
-            # Update log in smaller chunks to avoid long locks
-            try:
-                execute_db_query("UPDATE tasks SET log=? WHERE id=?", (log, tid))
-            except Exception as e:
-                print(f"Error updating log for task {tid}: {e}")
+            log_lines.append(line)
+            line_count += 1
+            
+            # Update database every 50 lines OR every 10 seconds
+            current_time = time.time()
+            if line_count >= 50 or (current_time - last_update) >= 10:
+                try:
+                    log_text = ''.join(log_lines)
+                    execute_db_query("UPDATE tasks SET log=? WHERE id=?", (log_text, tid))
+                    last_update = current_time
+                    line_count = 0  # Reset counter but keep log_lines for final update
+                except Exception as e:
+                    print(f"Error updating log for task {tid}: {e}")
+
+        # Final log update with complete output
+        try:
+            final_log = ''.join(log_lines)
+            execute_db_query("UPDATE tasks SET log=? WHERE id=?", (final_log, tid))
+        except Exception as e:
+            print(f"Error with final log update for task {tid}: {e}")
 
         code = proc.wait()
         status = 'completed' if code == 0 else 'failed'
@@ -196,7 +230,6 @@ def run_task(tid, script, url):
 
     except Exception as e:
         print(f"Error in run_task {tid}: {e}")
-        # Mark as failed if we encounter any errors
         try:
             execute_db_query(
                 "UPDATE tasks SET status=?, end_time=? WHERE id=?",
@@ -205,15 +238,14 @@ def run_task(tid, script, url):
         except Exception as update_error:
             print(f"Error updating failed status for task {tid}: {update_error}")
     finally:
-        # Clean up thread-local connection
         close_db_connection()
-        # decrement active_count if you rely on it elsewhere
         with lock:
             active_count -= 1
 
-# schedule queue processing
+# Schedule queue processing and periodic checkpoints
 scheduler = BackgroundScheduler()
 scheduler.add_job(process_queue, 'interval', seconds=5)
+scheduler.add_job(checkpoint_database, 'interval', minutes=15)  # Checkpoint every 15 minutes
 scheduler.start()
 
 # --- Flask app ---
@@ -290,6 +322,8 @@ def requeue(tid):
 def clear_completed():
     try:
         execute_db_query("DELETE FROM tasks WHERE status='completed'")
+        # Force checkpoint after cleanup
+        checkpoint_database()
         return '', 204
     except Exception as e:
         print(f"Error in /clear_completed: {e}")
@@ -299,6 +333,8 @@ def clear_completed():
 def clear_all():
     try:
         execute_db_query("DELETE FROM tasks")
+        # Force checkpoint after cleanup
+        checkpoint_database()
         return '', 204
     except Exception as e:
         print(f"Error in /clear_all: {e}")
@@ -323,7 +359,7 @@ def update_ytdlp():
             ['pip', 'install', '--upgrade', 'yt-dlp'],
             capture_output=True,
             text=True,
-            timeout=300  # 5 minute timeout
+            timeout=300
         )
         
         if result.returncode == 0:
@@ -338,6 +374,15 @@ def update_ytdlp():
         return jsonify({'success': False, 'error': 'Update timed out'}), 500
     except Exception as e:
         print(f"Error updating yt-dlp: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Add a manual checkpoint endpoint for emergency cleanup
+@app.route('/checkpoint_db', methods=['POST'])
+def manual_checkpoint():
+    try:
+        checkpoint_database()
+        return jsonify({'success': True, 'message': 'Database checkpoint completed'})
+    except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
