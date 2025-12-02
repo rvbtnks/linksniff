@@ -60,7 +60,7 @@ LinkSniff is a containerized Flask frontend webui that queues and manages downlo
 
 3. **Start the container**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 4. **Visit** `http://localhost:9559` and start adding URLs to download.
@@ -73,21 +73,13 @@ LinkSniff automatically detects which script to use based on the domain in your 
 
 For example:
 - `https://youtube.com/watch?v=xyz` → uses `linksniff-youtube.py`
-- `https://tiktok.com/@user` → uses `linksniff-tiktok.py`
-- `https://missav.ws/video123` → uses `linksniff-missav.py`
 
 All it looks for is the domain name and will dump files it downloads into a folder named that TL domain name. Again, I cannot stress this enough. Only run this on your personal private internal network.
 
 ## Included Example Scripts
 
-### YouTube (`linksniff-youtube.py`)
-Downloads videos with metadata, thumbnails, and subtitles. Creates a folder named after the uploader and saves the video there.
-
-### TikTok (`linksniff-tiktok.py`)
-Bulk profile downloads using JavaScript injection to scrape video links, then passes them to yt-dlp for actual downloading. Uses the JavaScript scraper from [dinoosauro/tiktok-to-ytdlp](https://github.com/dinoosauro/tiktok-to-ytdlp) (MIT License).
-
-### MissAV (`linksniff-missav.py`)
-Finds m3u8 streams on video pages and downloads them using yt-dlp with the page's filename.
+### Example m3u8 script
+Finds m3u8 streams on a video pages and downloads them using yt-dlp with the page's filename.
 
 ## Adding New Platforms
 
