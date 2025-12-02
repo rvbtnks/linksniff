@@ -5,180 +5,175 @@ This folder contains platform-specific download scripts that can be used either 
 ## How Script Selection Works
 
 LinkSniff automatically chooses which script to run based on the URL domain:
-- `https://www.youtube.com/watch?v=xyz` → `linksniff-youtube.py`
-- `https://www.tiktok.com/@user` → `linksniff-tiktok.py`  
-- `https://www.instagram.com/username` → `linksniff-instagram.py`
-- `https://missav.ws/video123` → `linksniff-missav.py`
-- `https://leakedzone.com/user/profile` → `linksniff-leakedzone.py`
+- `https://www.example1.com/content` → `linksniff-example1.py`
+- `https://www.example2.com/user` → `linksniff-example2.py`  
+- `https://www.example3.com/profile` → `linksniff-example3.py`
 
 The naming convention is: `linksniff-{domain}.py` where `{domain}` is the second-level domain extracted from the URL.
 
-## Available Scripts
+## Script Template Examples
 
-### YouTube (`linksniff-youtube.py`)
-Downloads YouTube videos with full metadata and quality options.
+### Video Platform Script Template
+Downloads videos with metadata and quality options.
 
-**Features:**
-- Creates folder named after the uploader
-- Downloads best quality MP4 with audio
-- Embeds metadata, thumbnails, and subtitles
-- Supports subtitle languages (defaults to English)
-- Restricts filenames for cross-platform compatibility
+**Common Features:**
+- Creates organized folder structures
+- Downloads best available quality
+- Embeds metadata and thumbnails
+- Supports subtitle extraction
+- Cross-platform compatible filenames
 
 **Usage:**
 ```bash
-python linksniff-youtube.py "https://www.youtube.com/watch?v=VIDEO_ID"
+python linksniff-videosite.py "https://www.videosite.com/content/VIDEO_ID"
 ```
 
-**Dependencies:** `yt-dlp`
+**Typical Dependencies:** `yt-dlp`, `requests`
 
 **Output Structure:**
 ```
-{uploader_name}/
-└── {video_title}.mp4
+{content_creator}/
+└── {content_title}.mp4
 ```
 
 ---
 
-### TikTok (`linksniff-tiktok.py`)
-Bulk downloads from TikTok profiles using JavaScript injection.
+### Profile/Bulk Download Script Template
+Bulk downloads from user profiles using browser automation.
 
-**Features:**
-- Downloads entire user profiles
-- Uses browser automation with Playwright
-- Injects JavaScript scraper for link extraction
-- Automatically runs yt-dlp on collected links
-- Creates username-based folder structure
+**Common Features:**
+- Downloads entire user profiles or collections
+- Uses browser automation for JavaScript-heavy sites
+- Extracts links via page scraping
+- Processes collected URLs with download tools
+- Creates organized folder structures
 
 **Usage:**
 ```bash
-python linksniff-tiktok.py "https://www.tiktok.com/@username"
+python linksniff-socialsite.py "https://www.socialsite.com/@username"
 ```
 
-**Dependencies:** 
-- `playwright` (with Firefox browser)
-- `yt-dlp`
+**Typical Dependencies:** 
+- `playwright` (with browser engines)
+- `yt-dlp` or other download tools
+- `beautifulsoup4` for parsing
 
 **Output Structure:**
 ```
 {username}/
-├── TikTokLinks.txt  # List of video URLs
-└── *.mp4           # Downloaded videos
+├── links.txt           # List of content URLs
+└── content/            # Downloaded files
 ```
-
-**Note:** Uses the JavaScript scraper from [dinoosauro/tiktok-to-ytdlp](https://github.com/dinoosauro/tiktok-to-ytdlp) (MIT License).
 
 ---
 
-### Instagram (`linksniff-instagram.py`) 
-Downloads Instagram profiles via sssinstagram.com proxy service.
+### Proxy-Based Downloader Template
+Downloads content via proxy services or alternative access methods.
 
-**Features:**
-- Downloads posts, stories, and reels
-- Extracts profile information and avatar
+**Common Features:**
+- Uses third-party services or proxies
+- Extracts profile information
 - Organizes content by type
 - Supports both headless and visible browser modes
 - Creates comprehensive folder structure
 
 **Usage:**
 ```bash
-python linksniff-instagram.py "https://www.instagram.com/username"
-python linksniff-instagram.py "https://www.instagram.com/username" -uh  # visible browser
+python linksniff-site.py "https://www.site.com/username"
+python linksniff-site.py "https://www.site.com/username" -uh  # visible browser
 ```
 
 **Arguments:**
 - `-uh, --unheadless`: Run browser in visible mode for debugging
 
-**Dependencies:**
-- `playwright` (Chromium browser)
+**Typical Dependencies:**
+- `playwright` (browser automation)
 - `requests`
+- `beautifulsoup4`
 
 **Output Structure:**
 ```
 {username}/
-├── profile_info.txt     # Profile metadata
-├── avatar_{username}.jpg
-├── posts/              # Profile posts
-├── stories/            # Story highlights  
-└── reels/              # Reels content
+├── profile_info.txt    # Profile metadata
+├── avatar.jpg
+├── content_type_1/     # Organized by content type
+├── content_type_2/     
+└── content_type_3/
 ```
 
 ---
 
-### MissAV (`linksniff-missav.py`)
-Downloads streaming videos from MissAV pages by extracting m3u8 links.
+### Stream Extractor Template
+Downloads streaming content by extracting media URLs.
 
-**Features:**
-- Extracts m3u8 streaming URLs from video pages
+**Common Features:**
+- Extracts m3u8 or other streaming URLs
 - Uses page URL for filename generation
-- Automatically runs yt-dlp for download
+- Processes streams with appropriate tools
 - Handles JavaScript-loaded content
 
 **Usage:**
 ```bash
-python linksniff-missav.py "https://missav.ws/video_page_url"
+python linksniff-streamsite.py "https://streamsite.com/content_page_url"
 ```
 
-**Dependencies:**
-- `playwright` (Chromium browser)  
-- `yt-dlp`
+**Typical Dependencies:**
+- `playwright` (browser automation)
+- `yt-dlp` or `ffmpeg`
+- `requests`
 
-**Output:** Files saved with basename from URL path
+**Output:** Files saved with descriptive names based on content
 
 ---
 
-### LeakedZone (`linksniff-leakedzone.py`) 
-**Complex unified scraper for LeakedZone content with special requirements.**
+### Advanced Multi-Content Scraper Template
+**Complex unified scraper with special requirements.**
 
-** IMPORTANT: This script currently requires running inside the Docker container due to audio codec dependencies and browser compatibility issues.**
-And don't ask me why. If you mute the volume videos don't download. Whatever.
+**⚠️ IMPORTANT: Some advanced scripts may require running inside the Docker container due to codec dependencies, browser compatibility, or other environmental requirements.**
 
-**Features:**
-- Downloads photos and videos from LeakedZone profiles
+**Common Features:**
+- Downloads multiple content types (photos, videos, etc.)
 - Async operation with concurrent downloads
-- Supports filtering by content type
-- Handles infinite scroll content loading
-- Captures m3u8 video streams
+- Supports content filtering
+- Handles infinite scroll or pagination
+- Captures various media formats
 - Debug mode with visible browser
 
 **Usage:**
 ```bash
-# Standard usage (photos and videos)
-python linksniff-leakedzone.py "https://leakedzone.com/username"
+# Standard usage (all content types)
+python linksniff-advancedsite.py "https://site.com/username"
 
-# Photos only
-python linksniff-leakedzone.py "https://leakedzone.com/username" --photos-only
-
-# Videos only  
-python linksniff-leakedzone.py "https://leakedzone.com/username" --videos-only
+# Filter by content type
+python linksniff-advancedsite.py "https://site.com/username" --photos-only
+python linksniff-advancedsite.py "https://site.com/username" --videos-only
 
 # Debug mode (visible browser)
-python linksniff-leakedzone.py "https://leakedzone.com/username" -dh
+python linksniff-advancedsite.py "https://site.com/username" -dh
 ```
 
-**Arguments:**
+**Typical Arguments:**
 - `-dh, --debug-headless`: Enable debug mode with visible browser
-- `--photos-only`: Only download photos, skip videos
-- `--videos-only`: Only download videos, skip photos
+- `--photos-only`: Only download photos, skip other content
+- `--videos-only`: Only download videos, skip other content
+- `--filter [type]`: Download specific content types
 
-**Dependencies:**
-- `playwright` (Firefox browser)
+**Typical Dependencies:**
+- `playwright` (with specific browser)
 - `aiohttp` for async HTTP requests
-- `yt-dlp` for video downloads
+- `yt-dlp` or other download tools
+- `asyncio` for concurrent operations
 
 **Output Structure:**
 ```
 {username}/
 ├── photos/
 │   └── {photo_id}.{ext}
-└── videos/  
-    └── video{0001}.mp4
+├── videos/  
+│   └── video{0001}.mp4
+└── other_content/
+    └── files...
 ```
-
-**Known Issues:**
-- Must be run inside Docker container
-- Has audio codec compatibility requirements
-- May require specific browser environment
 
 ---
 
@@ -238,6 +233,7 @@ The LinkSniff Docker container includes:
 4. **Provide progress feedback** - Print status messages
 5. **Test independently** - Ensure script works outside the web UI
 6. **Handle edge cases** - Empty results, network errors, invalid URLs
+7. **Document special requirements** - Note any container-specific dependencies
 
 ### Hot-Swappable Development
 
@@ -272,6 +268,11 @@ python /app/scripts/linksniff-yoursite.py "https://example.com/test_url"
 - Ensure the script has execute permissions
 - Check that the media directory is writable
 
+**Browser automation issues**
+- Verify correct browser engine is installed in container
+- Check for JavaScript errors in debug mode
+- Ensure sufficient container resources
+
 ## Contributing
 
 When adding new scripts:
@@ -280,5 +281,6 @@ When adding new scripts:
 3. Document any special requirements
 4. Include error handling and user feedback
 5. Consider organizing output into logical folder structures
+6. Note any container-specific dependencies or limitations
 
-For scripts with special requirements (like leakedzone), clearly document the limitations and setup needs.
+For scripts with special requirements (codec dependencies, specific browsers, etc.), clearly document the limitations and setup needs.
